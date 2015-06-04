@@ -5,5 +5,5 @@ import hipermercado.Hipermercado;
 
 
 public class General {
-	static Hipermercado hipermercado = new Hipermercado();
+	public static Hipermercado hipermercado = new Hipermercado();
 }

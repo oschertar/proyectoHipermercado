@@ -19,15 +19,32 @@ import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
+import hipermercado.Alimentacion;
 import hipermercado.Camiseta;
+import hipermercado.Carne;
 import hipermercado.CodigoBarrasNoValidoException;
 import hipermercado.ExistenciasInvalidasException;
+import hipermercado.FechaCaducidadInvalidaException;
+import hipermercado.Fruteria;
 import hipermercado.Hipermercado;
+import hipermercado.Manzanas;
+import hipermercado.Melocotones;
+import hipermercado.Naranjas;
+import hipermercado.PS4;
+import hipermercado.Pan;
 import hipermercado.Pantalon;
+import hipermercado.Pescado;
+import hipermercado.Portatil;
 import hipermercado.Producto;
 import hipermercado.ProductoYaExistenteException;
 import hipermercado.Ropa;
+import hipermercado.Sobremesa;
+import hipermercado.TV;
+import hipermercado.Talla;
 import hipermercado.Tecnologia;
+import hipermercado.Videojuegos;
+import hipermercado.Wii;
+import hipermercado.Xbox;
 import hipermercado.Zapatillas;
 import hipermercado.Zona;
 import hipermercado.ListaProductos;
@@ -39,6 +56,9 @@ import java.awt.event.ItemEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.regex.Pattern;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -67,13 +87,19 @@ import java.awt.event.WindowEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import hipermercado.Fabricante;
+import hipermercado.Origen;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 public class ComprarProductos extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtBarras;
-	private JComboBox comboBoxProducto;
-	private JComboBox comboBoxZona;
-	private JTextField textField_1;
+	private JComboBox<Producto> comboBoxProducto;
+	private JComboBox<Zona> comboBoxZona;
+	private JTextField txtFechadeCaducidad;
 	private JCheckBox chckbxPerecedero;
 	private JLabel lblFechaDeCaducidad;
 	private JButton botonAnnadir;
@@ -93,7 +119,7 @@ public class ComprarProductos extends JDialog {
 	private JLabel lblTalla;
 	private JComboBox comboBoxTallas;
 	private JLabel lblMarca;
-	private JComboBox<Zona> comboBoxMarca;
+	private JComboBox<Marca> comboBoxMarca;
 	private JLabel tick;
 	private JLabel error;
 	private JLabel camisetas;
@@ -105,7 +131,7 @@ public class ComprarProductos extends JDialog {
 	private JLabel portatil;
 	private JLabel tv;
 	private JLabel sobremesa;
-	private SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy") ;
+	private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
 	private JLabel carne;
 	private JLabel pescado;
 	private JLabel pan;
@@ -116,7 +142,13 @@ public class ComprarProductos extends JDialog {
 	private JLabel xbox;
 	private JLabel ps4;
 	private JLabel label_8;
+
+	private JComboBox<Fabricante> comboBoxFabricante;
+	private JLabel lblFabricante;
+	private JLabel lblOrigen;
+	private JComboBox<Origen> comboBoxOrigen;
 	
+	private JComboBox<Talla> comboBoxTallaEnum;
 
 	/**
 	 * Create the dialog.
@@ -155,7 +187,8 @@ public class ComprarProductos extends JDialog {
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				if (!hipermercado.Producto.esValido(txtBarras.getText())) {
+				if (!hipermercado.Producto.esValido(txtBarras.getText(),
+						(Zona) comboBoxZona.getSelectedItem())) {
 					txtBarras.setForeground(Color.RED);
 					error.setVisible(true);
 					tick.setVisible(false);
@@ -164,7 +197,7 @@ public class ComprarProductos extends JDialog {
 					txtBarras.setForeground(new Color(0, 128, 0));
 					tick.setVisible(true);
 					error.setVisible(false);
-				
+
 				}
 			}
 
@@ -181,21 +214,44 @@ public class ComprarProductos extends JDialog {
 				botonAnnadir = new JButton("A\u00F1adir Producto");
 				botonAnnadir.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
+
 						try {
 							annadirProducto((Zona) comboBoxZona
 									.getSelectedItem(), General.hipermercado,
 									(ListaProductos) comboBoxProducto
-											.getSelectedItem());
-						} catch (NumberFormatException | HeadlessException
-								| ProductoYaExistenteException
-								| ExistenciasInvalidasException
-								| CodigoBarrasNoValidoException
-								| ParseException e) {
+											.getSelectedItem(), txtBarras
+											.getText());
+							
+
+						} catch (NumberFormatException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (HeadlessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (ProductoYaExistenteException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (NullPointerException e) {
+							JOptionPane.showMessageDialog(contentPanel,
+									"Hay casillas sin rellenar", "Error",
+									JOptionPane.ERROR_MESSAGE);
+						} catch (ExistenciasInvalidasException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (CodigoBarrasNoValidoException e) {
+							JOptionPane
+									.showMessageDialog(
+											contentPanel,
+											"Código de barras inválido. Formato inadecuado",
+											"Error", JOptionPane.ERROR_MESSAGE);
+						} catch (ParseException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 
 					}
+
 				});
 				botonAnnadir.setActionCommand("OK");
 				buttonPane.add(botonAnnadir);
@@ -213,7 +269,7 @@ public class ComprarProductos extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
-		comboBoxProducto = new JComboBox();
+		comboBoxProducto = new JComboBox<Producto>();
 		comboBoxProducto.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
 				cambiarImagen(true);
@@ -234,29 +290,48 @@ public class ComprarProductos extends JDialog {
 		lblZona.setBounds(39, 22, 50, 30);
 		contentPanel.add(lblZona);
 
-		comboBoxZona = new JComboBox();
+		comboBoxZona = new JComboBox<Zona>();
 		comboBoxZona.setSelectedIndex(-1);
+		comboBoxTallaEnum = new JComboBox<Talla>();
+		comboBoxTallaEnum.setModel(new DefaultComboBoxModel(Talla.values()));
 
+		comboBoxTallaEnum.setBounds(470, 73, 56, 20);
+		comboBoxTallaEnum.setVisible(false);
+		contentPanel.add(comboBoxTallaEnum);
 		comboBoxZona.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (comboBoxZona.getSelectedItem() == Zona.ALIMENTACION
 						|| comboBoxZona.getSelectedItem() == Zona.FRUTERIA) {
 					chckbxPerecedero.setVisible(true);
 					chckbxPerecedero.setSelected(true);
+					lblArticulosAAadir.setText("Kilos a a\u00F1adir");
+					lblUnidadesMnimas.setText("Kilos M\u00EDnimos");
 				} else if (comboBoxZona.getSelectedItem() != Zona.ALIMENTACION
 						|| comboBoxZona.getSelectedItem() != Zona.FRUTERIA) {
 					chckbxPerecedero.setSelected(false);
 					chckbxPerecedero.setVisible(false);
+					lblArticulosAAadir.setText("Articulos a a\u00F1adir");
+					lblUnidadesMnimas.setText("Unidades M\u00EDnimas");
 				}
+				if (comboBoxZona.getSelectedItem() == Zona.FRUTERIA) {
+					lblOrigen.setVisible(true);
+					comboBoxOrigen.setVisible(true);
+				} else if (comboBoxZona.getSelectedItem() != Zona.FRUTERIA) {
+					lblOrigen.setVisible(false);
+					comboBoxOrigen.setVisible(false);
 
+				}
 				if (comboBoxZona.getSelectedItem() == Zona.ROPA) {
-					comboBoxTallas.setVisible(true);
-					lblTalla.setVisible(true);
+
 					lblMarca.setVisible(true);
 					comboBoxMarca.setVisible(true);
+					lblTalla.setVisible(true);
 					cambiarImagen(true);
-				} else if (comboBoxZona.getSelectedItem() != Zona.ROPA) {
+					
+
+				}else if (comboBoxZona.getSelectedItem() != Zona.ROPA) {
 					comboBoxTallas.setVisible(false);
+					comboBoxTallaEnum.setVisible(false);
 					lblTalla.setVisible(false);
 					lblMarca.setVisible(false);
 					comboBoxMarca.setVisible(false);
@@ -264,6 +339,13 @@ public class ComprarProductos extends JDialog {
 
 				}
 
+				if (comboBoxZona.getSelectedItem() == Zona.TECNOLOGIA) {
+					comboBoxFabricante.setVisible(true);
+					lblFabricante.setVisible(true);
+				} else if (comboBoxZona.getSelectedItem() != Zona.TECNOLOGIA) {
+					comboBoxFabricante.setVisible(false);
+					lblFabricante.setVisible(false);
+				}
 			}
 		});
 		comboBoxZona.addItemListener(new ItemListener() {
@@ -282,11 +364,11 @@ public class ComprarProductos extends JDialog {
 		chckbxPerecedero.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (chckbxPerecedero.isSelected()) {
-					textField_1.setVisible(true);
+					txtFechadeCaducidad.setVisible(true);
 					lblFechaDeCaducidad.setVisible(true);
 
 				} else if (!chckbxPerecedero.isSelected()) {
-					textField_1.setVisible(false);
+					txtFechadeCaducidad.setVisible(false);
 					lblFechaDeCaducidad.setVisible(false);
 				}
 			}
@@ -295,29 +377,47 @@ public class ComprarProductos extends JDialog {
 		chckbxPerecedero.setBounds(367, 72, 97, 23);
 		contentPanel.add(chckbxPerecedero);
 
-		textField_1 = new JTextField();
-		textField_1.setBounds(470, 73, 129, 20);
-		contentPanel.add(textField_1);
-		textField_1.setColumns(10);
+		txtFechadeCaducidad = new JTextField();
+		txtFechadeCaducidad.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				if (!hipermercado.Alimentacion.esValido(txtFechadeCaducidad
+						.getText())) {
+					txtFechadeCaducidad.setForeground(Color.RED);
 
-		textField_1.setVisible(false);
+				} else {
+					txtFechadeCaducidad.setForeground(new Color(0, 128, 0));
+
+				}
+			}
+
+			@Override
+			public void focusGained(FocusEvent e) {
+				txtFechadeCaducidad.setForeground(Color.BLACK);
+			}
+		});
+		txtFechadeCaducidad.setBounds(470, 73, 129, 20);
+		contentPanel.add(txtFechadeCaducidad);
+		txtFechadeCaducidad.setColumns(10);
+
+		txtFechadeCaducidad.setVisible(false);
 		lblFechaDeCaducidad = new JLabel("Fecha de caducidad");
 		lblFechaDeCaducidad.setBounds(492, 91, 135, 20);
 		lblFechaDeCaducidad.setVisible(false);
 		contentPanel.add(lblFechaDeCaducidad);
 
 		JLabel lblPrecio = new JLabel("Precio");
-		lblPrecio.setBounds(367, 30, 56, 14);
+		lblPrecio.setBounds(367, 22, 56, 14);
 		contentPanel.add(lblPrecio);
 
 		txtPrecio = new JTextField();
-		txtPrecio.setBounds(444, 27, 86, 20);
+		txtPrecio.setBounds(407, 20, 86, 20);
 		contentPanel.add(txtPrecio);
 		txtPrecio.setColumns(10);
 
-		JLabel label = new JLabel("\u20AC");
-		label.setBounds(553, 30, 46, 14);
-		contentPanel.add(label);
+		JLabel lblsinIva = new JLabel("\u20AC   (Sin IVA)");
+		lblsinIva.setBounds(503, 22, 96, 14);
+		contentPanel.add(lblsinIva);
 
 		JLabel label_1 = new JLabel("");
 		label_1.setIcon(new ImageIcon(ComprarProductos.class
@@ -326,6 +426,14 @@ public class ComprarProductos extends JDialog {
 		contentPanel.add(label_1);
 
 		sliderExistencias = new JSlider();
+		sliderExistencias.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+
+				txtExistencias.setText(Integer.toString(sliderExistencias
+						.getValue()));
+			}
+		});
 
 		sliderExistencias
 				.setToolTipText("Elige un valor entre los posibles y haz click sobre el cuadro blanco de la derecha");
@@ -353,73 +461,58 @@ public class ComprarProductos extends JDialog {
 		contentPanel.add(lblArticulosAAadir);
 
 		txtExistencias = new JTextField();
+		txtExistencias.setEditable(false);
 		txtExistencias.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent arg0) {
-				   char c=arg0.getKeyChar();
-				   
-				   
-			        	
-			          if(Character.isLetter(c)) {
-			              getToolkit().beep();
-			              arg0.consume();
-			              JOptionPane.showMessageDialog(contentPanel,
-			  					"Solo se admiten números.", "Error",
-			  					JOptionPane.ERROR_MESSAGE);
-			              
-			              
-			}
+				char c = arg0.getKeyChar();
+
+				if (Character.isLetter(c)) {
+					getToolkit().beep();
+					arg0.consume();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Solo se admiten números.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+
+				}
 			}
 		});
-		txtExistencias.getDocument().addDocumentListener(new DocumentListener() {
-			
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				
-				actualizarNumero(txtExistencias, sliderExistencias);
-				
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				
-				actualizarNumero(txtExistencias, sliderExistencias);
-			}
-			
-			
+		txtExistencias.getDocument().addDocumentListener(
+				new DocumentListener() {
 
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				
-				actualizarNumero(txtExistencias, sliderExistencias);
-			}
-		});
-		txtExistencias.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent e) {
+					@Override
+					public void removeUpdate(DocumentEvent e) {
 
-				txtExistencias.setText(Integer.toString(sliderExistencias
-						.getValue()));
+						actualizarNumero(txtExistencias, sliderExistencias);
 
-			}
-		});
-		
+					}
+
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+
+						actualizarNumero(txtExistencias, sliderExistencias);
+					}
+
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+
+						actualizarNumero(txtExistencias, sliderExistencias);
+					}
+				});
+
 		txtExistencias.setBounds(244, 180, 86, 20);
 		contentPanel.add(txtExistencias);
 		txtExistencias.setColumns(10);
 
 		sliderMinimos = new JSlider();
-		sliderMinimos.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {
-
-				txtMinimos.setText(Integer.toString(sliderMinimos.getValue()));
-			}
+		sliderMinimos.addMouseListener(new MouseAdapter() {
 
 			@Override
-			public void focusGained(FocusEvent arg0) {
+			public void mouseReleased(MouseEvent e) {
 				txtMinimos.setText(Integer.toString(sliderMinimos.getValue()));
 			}
 		});
+
 		sliderMinimos
 				.setToolTipText("Elige un valor entre los posibles y haz click sobre el cuadro blanco de la derecha");
 		sliderMinimos.setPaintLabels(true);
@@ -433,43 +526,40 @@ public class ComprarProductos extends JDialog {
 		contentPanel.add(lblUnidadesMnimas);
 
 		txtMinimos = new JTextField();
+		txtMinimos.setEditable(false);
 		txtMinimos.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				char c=e.getKeyChar();
-	            
-		        
-		          if(Character.isLetter(c)) {
-		              getToolkit().beep();
-		              e.consume();
-		              JOptionPane.showMessageDialog(contentPanel,
-		  					"Solo se admiten números.", "Error",
-		  					JOptionPane.ERROR_MESSAGE);
-		              
-		              
-		}
+				char c = e.getKeyChar();
+
+				if (Character.isLetter(c)) {
+					getToolkit().beep();
+					e.consume();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Solo se admiten números.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+
+				}
 			}
 		});
 		txtMinimos.getDocument().addDocumentListener(new DocumentListener() {
-			
+
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				actualizarNumero(txtMinimos, sliderMinimos);
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				actualizarNumero(txtMinimos, sliderMinimos);
 			}
-			
-			
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				actualizarNumero(txtMinimos, sliderMinimos);
 			}
 		});
-		
+
 		txtMinimos.setBounds(244, 263, 86, 20);
 		contentPanel.add(txtMinimos);
 		txtMinimos.setColumns(10);
@@ -503,7 +593,7 @@ public class ComprarProductos extends JDialog {
 		lblMarca.setBounds(391, 123, 46, 14);
 		contentPanel.add(lblMarca);
 
-		comboBoxMarca = new JComboBox();
+		comboBoxMarca = new JComboBox<Marca>();
 		comboBoxMarca.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
 				cambiarImagen(true);
@@ -579,6 +669,7 @@ public class ComprarProductos extends JDialog {
 				getProducto(comboBoxZona)));
 
 		carne = new JLabel("");
+		formato.setLenient(true);
 		carne.setIcon(new ImageIcon(ComprarProductos.class
 				.getResource("/img/productos/carne.jpg")));
 		carne.setBounds(386, 194, 182, 142);
@@ -631,12 +722,36 @@ public class ComprarProductos extends JDialog {
 				.getResource("/img/productos/ps4.jpg")));
 		ps4.setBounds(386, 194, 182, 142);
 		contentPanel.add(ps4);
-		
+
 		label_8 = new JLabel("");
 		label_8.setToolTipText("El c\u00F3digo de barras admitido tiene un formato de 5 n\u00FAmeros y 2 letras( Zonas: Ropa [RO], Alimentaci\u00F3n: [AL], Fruter\u00EDa: [FR], Tecnolog\u00EDa[TE], Videojuegos[VI]).\r\n\r\n\r\n\r\n\r\n");
-		label_8.setIcon(new ImageIcon(ComprarProductos.class.getResource("/img/ayuda.jpeg")));
+		label_8.setIcon(new ImageIcon(ComprarProductos.class
+				.getResource("/img/ayuda.jpeg")));
 		label_8.setBounds(181, 120, 24, 20);
 		contentPanel.add(label_8);
+
+		lblFabricante = new JLabel("Fabricante");
+		lblFabricante.setBounds(367, 76, 97, 14);
+		contentPanel.add(lblFabricante);
+
+		comboBoxFabricante = new JComboBox<Fabricante>();
+		comboBoxFabricante.setModel(new DefaultComboBoxModel(Fabricante
+				.values()));
+		comboBoxFabricante.setBounds(470, 73, 111, 20);
+
+		contentPanel.add(comboBoxFabricante);
+
+		lblOrigen = new JLabel("Origen");
+		lblOrigen.setBounds(377, 123, 46, 14);
+		contentPanel.add(lblOrigen);
+
+		comboBoxOrigen = new JComboBox<Origen>();
+		comboBoxOrigen.setModel(new DefaultComboBoxModel(Origen.values()));
+		comboBoxOrigen.setBounds(470, 120, 79, 20);
+		contentPanel.add(comboBoxOrigen);
+
+		comboBoxOrigen.setVisible(false);
+		lblOrigen.setVisible(false);
 		carne.setVisible(false);
 		pescado.setVisible(false);
 		pan.setVisible(false);
@@ -656,9 +771,12 @@ public class ComprarProductos extends JDialog {
 		txtPrecio.setText("");
 		txtMinimos.setText("10");
 		comboBoxProducto.setSelectedIndex(-1);
-		comboBoxZona.setSelectedIndex(-1);
+		comboBoxZona.setSelectedIndex(0);
 		sliderExistencias.setValue(0);
 		sliderMinimos.setValue(10);
+		txtExistencias.setText("0");
+		txtMinimos.setText("10");
+		txtFechadeCaducidad.setText("");
 		error.setVisible(false);
 		tick.setVisible(false);
 		cambiarImagen(false);
@@ -675,53 +793,52 @@ public class ComprarProductos extends JDialog {
 	}
 
 	private void cambiarImagen(boolean opcion) {
-		if (comboBoxZona.getSelectedItem() == Zona.ROPA) {
-			colocarImagenRopa(true);
+		if (!opcion) {
 			colocarImagenTecnologia(false);
-			colocarImagenAlimentacion(false);
-			colocarImagenVideojuegos(false);
-			colocarImagenFrutas(false);
-		}
-		if (comboBoxZona.getSelectedItem() == Zona.TECNOLOGIA) {
-			colocarImagenTecnologia(true);
 			colocarImagenRopa(false);
 			colocarImagenAlimentacion(false);
 			colocarImagenVideojuegos(false);
 			colocarImagenFrutas(false);
+			return;
+		}
+		switch ((Zona) comboBoxZona.getSelectedItem()) {
+		case ROPA:
+			actualizarImagenes(false, true, false, false, false);
+			if((ListaProductos) comboBoxProducto.getSelectedItem()==ListaProductos.ZAPATILLAS){
+				comboBoxTallas.setVisible(true);
+				comboBoxTallaEnum.setVisible(false);
+			}else if((ListaProductos) comboBoxProducto.getSelectedItem()==ListaProductos.CAMISETA |(ListaProductos) comboBoxProducto.getSelectedItem()==ListaProductos.PANTALÓN){
+				comboBoxTallas.setVisible(false);
+				comboBoxTallaEnum.setVisible(true);
+			}
+			break;
+
+		case TECNOLOGIA:
+			actualizarImagenes(true, false, false, false, false);
+			break;
+
+		case ALIMENTACION:
+			actualizarImagenes(false, false, true, false, false);
+			break;
+
+		case FRUTERIA:
+			actualizarImagenes(false, false, false, false, true);
+			break;
+		case VIDEOJUEGOS:
+			actualizarImagenes(false, false, false, true, false);
+			break;
+
 		}
 
-		if (comboBoxZona.getSelectedItem() == Zona.ALIMENTACION) {
-			colocarImagenTecnologia(false);
-			colocarImagenRopa(false);
-			colocarImagenAlimentacion(true);
-			colocarImagenVideojuegos(false);
-			colocarImagenFrutas(false);
-		}
+	}
 
-		if (comboBoxZona.getSelectedItem() == Zona.FRUTERIA) {
-			colocarImagenTecnologia(false);
-			colocarImagenRopa(false);
-			colocarImagenAlimentacion(false);
-			colocarImagenVideojuegos(false);
-			colocarImagenFrutas(true);
-		}
-
-		if (comboBoxZona.getSelectedItem() == Zona.VIDEOJUEGOS) {
-			colocarImagenTecnologia(false);
-			colocarImagenRopa(false);
-			colocarImagenAlimentacion(false);
-			colocarImagenVideojuegos(true);
-			colocarImagenFrutas(false);
-		}
-		
-		if(opcion == false){
-			colocarImagenTecnologia(false);
-			colocarImagenRopa(false);
-			colocarImagenAlimentacion(false);
-			colocarImagenVideojuegos(false);
-			colocarImagenFrutas(false);
-		}
-
+	private void actualizarImagenes(boolean tecnologia, boolean ropa,
+			boolean alimentacion, boolean videojuegos, boolean frutas) {
+		colocarImagenTecnologia(tecnologia);
+		colocarImagenRopa(ropa);
+		colocarImagenAlimentacion(alimentacion);
+		colocarImagenVideojuegos(videojuegos);
+		colocarImagenFrutas(frutas);
 	}
 
 	private void colocarImagenRopa(boolean opcion) {
@@ -846,7 +963,7 @@ public class ComprarProductos extends JDialog {
 		}
 
 	}
-	
+
 	private void colocarImagenFrutas(boolean opcion) {
 		if (comboBoxProducto.getSelectedItem() == ListaProductos.MANZANAS) {
 			manzanas.setVisible(true);
@@ -874,7 +991,7 @@ public class ComprarProductos extends JDialog {
 		}
 
 	}
-	
+
 	private void colocarImagenVideojuegos(boolean opcion) {
 		if (comboBoxProducto.getSelectedItem() == ListaProductos.WII) {
 			wii.setVisible(true);
@@ -904,64 +1021,215 @@ public class ComprarProductos extends JDialog {
 	}
 
 	private void annadirProducto(Zona zona, Hipermercado hipermercado,
-			ListaProductos producto) throws NumberFormatException,
-			ProductoYaExistenteException, ExistenciasInvalidasException,
-			CodigoBarrasNoValidoException, ParseException, HeadlessException {
-		switch (zona) {
-		case ROPA:
-			switch (producto) {
-			case CAMISETA:
-				Ropa camiseta = new Camiseta((ListaProductos) comboBoxProducto.getSelectedItem(),txtBarras.getText(), Float.parseFloat(txtPrecio.getText()),
-						(Zona) comboBoxZona.getSelectedItem(),Integer.parseInt(txtExistencias.getText()),Integer.parseInt(txtMinimos.getText()),Integer.parseInt((String)comboBoxTallas.getSelectedItem()),
-						(Marca) comboBoxMarca.getSelectedItem());
-				if (hipermercado.annadir(camiseta))
-					JOptionPane.showMessageDialog(contentPanel,
-							"Camiseta añadida con éxito.");
-				break;
-			case PANTALÓN:
-				Ropa pantalon = new Pantalon(
-						(ListaProductos) comboBoxProducto.getSelectedItem(),
-						txtBarras.getText(), Float.parseFloat(txtPrecio
-								.getText()),
-						(Zona) comboBoxZona.getSelectedItem(),
-						Integer.parseInt(txtExistencias.getText()),
-						Integer.parseInt(txtMinimos.getText()),
-						Integer.parseInt((String)comboBoxTallas.getSelectedItem()) ,
-						(Marca) comboBoxMarca.getSelectedItem());
-				if (hipermercado.annadir(pantalon))
-					JOptionPane.showMessageDialog(contentPanel,
-							"Producto tecnológico añadido con éxito.");
-				break;
+			ListaProductos producto, String barras)
+			throws NumberFormatException, ProductoYaExistenteException,
+			ExistenciasInvalidasException, CodigoBarrasNoValidoException,
+			ParseException, HeadlessException {
+		if (Producto.esValido(barras, zona))
+			switch (zona) {
+			case ROPA:
+				elegirRopa(hipermercado, producto);
 
-			case ZAPATILLAS:
-				Ropa zapatillas = new Zapatillas(
-						(ListaProductos) comboBoxProducto.getSelectedItem(),
-						txtBarras.getText(), Float.parseFloat(txtPrecio
-								.getText()),
-						(Zona) comboBoxZona.getSelectedItem(),
-						Integer.parseInt(txtExistencias.getText()),
-						Integer.parseInt(txtMinimos.getText()),
-						Integer.parseInt((String)comboBoxTallas.getSelectedItem()),
-						(Marca) comboBoxMarca.getSelectedItem());
-				if (hipermercado.annadir(zapatillas))
-					JOptionPane.showMessageDialog(contentPanel,
-							"Producto tecnológico añadido con éxito.");
+				break;
+			case TECNOLOGIA:
+				elegirTecnologia(hipermercado, producto);
+				break;
+			case ALIMENTACION:
+				elegirAlimentacion(hipermercado, producto);
+				break;
+			case FRUTERIA:
+				elegirFruteria(hipermercado, producto);
+				break;
+			case VIDEOJUEGOS:
+				elegirVideojuegos(hipermercado, producto);
 				break;
 			default:
 				break;
 			}
-			 break;
-		/*case TECNOLOGIA:
-			switch (producto) {
-			case TV:
-				Tecnologia tv = new TV((ListaProductos) comboBoxProducto.getSelectedItem(),txtBarras.getText(), Float.parseFloat(txtPrecio.getText()),
-						(Zona) comboBoxZona.getSelectedItem(),Integer.parseInt(txtExistencias.getText()),Integer.parseInt(txtMinimos.getText()),Integer.parseInt((String)comboBoxTallas.getSelectedItem()),
-						(Marca) comboBoxMarca.getSelectedItem());
-				if (hipermercado.annadir(tv))
+		else
+			throw new CodigoBarrasNoValidoException("");
+
+	}
+
+	private void elegirAlimentacion(Hipermercado hipermercado,
+			ListaProductos producto) throws ProductoYaExistenteException,
+			ExistenciasInvalidasException {
+
+		switch (producto) {
+		case CARNE:
+			Alimentacion carne;
+
+			try {
+				carne = new Carne(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						formato.parse(txtFechadeCaducidad.getText()));
+				if (hipermercado.annadir(carne, txtBarras.getText())) {
 					JOptionPane.showMessageDialog(contentPanel,
-							"Camiseta añadida con éxito.");
-				break;
-			case PORTÁTIL:
+							"Carne añadida con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ParseException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Formato de fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (FechaCaducidadInvalidaException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+
+			break;
+		case PESCADO:
+			Alimentacion pescado;
+			try {
+				pescado = new Pescado(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						formato.parse(txtFechadeCaducidad.getText()));
+
+				if (hipermercado.annadir(pescado, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Pescado añadido con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ParseException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Formato de fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (FechaCaducidadInvalidaException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+
+			break;
+
+		case PAN:
+			Alimentacion pan;
+			try {
+				pan = new Pan(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						formato.parse(txtFechadeCaducidad.getText()));
+
+				if (hipermercado.annadir(pan, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Pan añadido con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ParseException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Formato de fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (FechaCaducidadInvalidaException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+
+			break;
+		default:
+			break;
+		}
+
+	}
+
+	private void elegirTecnologia(Hipermercado hipermercado,
+			ListaProductos producto) throws ProductoYaExistenteException,
+			NumberFormatException, ExistenciasInvalidasException {
+		switch (producto) {
+		case TV:
+			try {
+				Tecnologia tv = new TV(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						(Fabricante) comboBoxFabricante.getSelectedItem());
+				if (hipermercado.annadir(tv, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"TV añadida con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+		case PORTÁTIL:
+			try {
 				Tecnologia portatil = new Portatil(
 						(ListaProductos) comboBoxProducto.getSelectedItem(),
 						txtBarras.getText(), Float.parseFloat(txtPrecio
@@ -969,14 +1237,32 @@ public class ComprarProductos extends JDialog {
 						(Zona) comboBoxZona.getSelectedItem(),
 						Integer.parseInt(txtExistencias.getText()),
 						Integer.parseInt(txtMinimos.getText()),
-						Integer.parseInt((String)comboBoxTallas.getSelectedItem()) ,
-						(Marca) comboBoxMarca.getSelectedItem());
-				if (hipermercado.annadir(portatil))
+						(Fabricante) comboBoxFabricante.getSelectedItem());
+				if (hipermercado.annadir(portatil, txtBarras.getText())) {
 					JOptionPane.showMessageDialog(contentPanel,
-							"Producto tecnológico añadido con éxito.");
-				break;
+							"Portátil añadido con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
 
-			case SOBREMESA:
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+
+		case SOBREMESA:
+			try {
 				Tecnologia sobremesa = new Sobremesa(
 						(ListaProductos) comboBoxProducto.getSelectedItem(),
 						txtBarras.getText(), Float.parseFloat(txtPrecio
@@ -984,34 +1270,403 @@ public class ComprarProductos extends JDialog {
 						(Zona) comboBoxZona.getSelectedItem(),
 						Integer.parseInt(txtExistencias.getText()),
 						Integer.parseInt(txtMinimos.getText()),
-						Integer.parseInt((String)comboBoxTallas.getSelectedItem()),
-						(Marca) comboBoxMarca.getSelectedItem());
-				if (hipermercado.annadir(sobremesa))
+						(Fabricante) comboBoxFabricante.getSelectedItem());
+				if (hipermercado.annadir(sobremesa, txtBarras.getText())) {
 					JOptionPane.showMessageDialog(contentPanel,
-							"Producto tecnológico añadido con éxito.");
-				break;
-			default:
-				break;
+							"Sobremesa añadido con éxito.");
+
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
 			}
-			break;*/
-			
+			break;
 		default:
 			break;
 		}
 	}
-	
+
+	private void elegirRopa(Hipermercado hipermercado, ListaProductos producto)
+			throws NumberFormatException, ExistenciasInvalidasException {
+		switch (producto) {
+		case CAMISETA:
+			try {
+				Ropa camiseta = new Camiseta(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						(Marca) comboBoxMarca.getSelectedItem(),
+						(Talla) comboBoxTallaEnum.getSelectedItem());
+
+				if (hipermercado.annadir(camiseta, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Camiseta añadida con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+		case PANTALÓN:
+			try {
+				Ropa pantalon = new Pantalon(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						(Marca) comboBoxMarca.getSelectedItem(),
+						(Talla) comboBoxTallaEnum.getSelectedItem());
+				if (hipermercado.annadir(pantalon, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Pantalón añadido con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+
+		case ZAPATILLAS:
+			try {
+				Ropa zapatillas = new Zapatillas(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						Integer.parseInt((String) comboBoxTallas
+								.getSelectedItem()),
+						(Marca) comboBoxMarca.getSelectedItem());
+				if (hipermercado.annadir(zapatillas, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Zapatillas añadidas con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void elegirFruteria(Hipermercado hipermercado,
+			ListaProductos producto) throws ProductoYaExistenteException,
+			ExistenciasInvalidasException {
+		switch (producto) {
+		case MANZANAS:
+
+			try {
+				Fruteria manzanas = new Manzanas(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						(Origen) comboBoxOrigen.getSelectedItem(),
+						formato.parse(txtFechadeCaducidad.getText()));
+
+				if (hipermercado.annadir(manzanas, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Manzanas añadidas con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ParseException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Formato de fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (FechaCaducidadInvalidaException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+
+			break;
+		case NARANJAS:
+
+			try {
+				Fruteria naranjas = new Naranjas(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						(Origen) comboBoxOrigen.getSelectedItem(),
+						formato.parse(txtFechadeCaducidad.getText()));
+
+				if (hipermercado.annadir(naranjas, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Naranjas añadidas con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ParseException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Formato de fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (FechaCaducidadInvalidaException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+
+			break;
+
+		case MELOCOTONES:
+
+			try {
+				Fruteria melocotones = new Melocotones(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()),
+						(Origen) comboBoxOrigen.getSelectedItem(),
+						formato.parse(txtFechadeCaducidad.getText()));
+
+				if (hipermercado.annadir(melocotones, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Melocotones añadidos con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ParseException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Formato de fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (FechaCaducidadInvalidaException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Fecha de caducidad inválida", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+
+			break;
+		default:
+			break;
+		}
+
+	}
+
+	private void elegirVideojuegos(Hipermercado hipermercado,
+			ListaProductos producto) {
+		switch (producto) {
+		case PS4:
+			try {
+				Videojuegos ps4 = new PS4(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()));
+
+				if (hipermercado.annadir(ps4, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"PS4 añadida con éxito.");
+					limpiar();
+				}
+
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+		case XBOXONE:
+			try {
+				Videojuegos xbox = new Xbox(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()));
+				if (hipermercado.annadir(xbox, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Xbox añadida con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+
+		case WII:
+			try {
+				Videojuegos wii = new Wii(
+						(ListaProductos) comboBoxProducto.getSelectedItem(),
+						txtBarras.getText(), Float.parseFloat(txtPrecio
+								.getText()),
+						(Zona) comboBoxZona.getSelectedItem(),
+						Integer.parseInt(txtExistencias.getText()),
+						Integer.parseInt(txtMinimos.getText()));
+				if (hipermercado.annadir(wii, txtBarras.getText())) {
+					JOptionPane.showMessageDialog(contentPanel,
+							"Zapatillas añadidas con éxito.");
+					limpiar();
+				}
+			} catch (NumberFormatException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Rellena todos los campos.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (ProductoYaExistenteException e1) {
+				JOptionPane.showMessageDialog(contentPanel,
+						"Producto ya existente.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+
+			} catch (ExistenciasInvalidasException e1) {
+				JOptionPane
+						.showMessageDialog(
+								contentPanel,
+								"Las existencias no pueden ser menores que la cantidad mínima.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
 	private void actualizarNumero(JTextField texto, JSlider slider) {
-		
-		
-		if(texto.getDocument().getLength()>0){
+
+		if (texto.getDocument().getLength() > 0) {
 			try {
 				slider.setValue(Integer.valueOf(texto.getText()));
 			} catch (NumberFormatException e) {
 				texto.setForeground(Color.RED);
-			}catch (IllegalStateException e) {
-					texto.setForeground(Color.RED);
+			} catch (IllegalStateException e) {
+				texto.setForeground(Color.RED);
 			}
-		
+
 		}
 	}
 }

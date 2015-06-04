@@ -1,36 +1,39 @@
 package hipermercado;
 
-public  class Ropa extends Producto implements IVA {
-	protected int talla;
+import java.io.Serializable;
+
+
+
+public  class Ropa extends Producto implements IVA, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4538504182860008907L;
 	protected Marca marca;
-	public Ropa(ListaProductos listaProductos, String codigoBarras, float precio, Zona zona, int articulos, int minimo, int talla, Marca marca) {
+	public Ropa(ListaProductos listaProductos, String codigoBarras, float precio, Zona zona, int articulos, int minimo, Marca marca) throws ExistenciasInvalidasException {
 		super(listaProductos, codigoBarras, precio, zona, articulos, minimo);
-		this.talla = talla;
+		
 		this.marca=marca;
 	}
 	
 	
 	@Override
-	public double calcularIVA(double precio){
-		precio=precio*0.21; //21% IVA aplicado en Ropa
+	public float calcularIVA(float precio){
+		precio= (float) (precio*IVA._1_21); //21% IVA aplicado en Ropa
 		return precio;
 	}
 
-	private int getTalla() {
-		return talla;
-	}
-
-	private void setTalla(int talla) {
-		this.talla = talla;
-	}
-
-	private Marca getMarca() {
+	
+	public Marca getMarca() {
 		return marca;
 	}
 
 	private void setMarca(Marca marca) {
 		this.marca = marca;
 	}
+
+
+
 	
 	
 	

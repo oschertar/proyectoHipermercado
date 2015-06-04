@@ -1,19 +1,34 @@
 package hipermercado;
 
+import java.io.Serializable;
 import java.util.regex.Pattern;
 
+public abstract class Producto implements IVA, Serializable,
+		Comparable<Producto> {
 
-public class Producto implements IVA{
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3393956186083517403L;
 	protected ListaProductos nombre;
-	protected String codigoBarras; //5 dígitos + (RO, TE, AL, FR, VI)
+	protected String codigoBarras; // 5 dígitos + (RO, TE, AL, FR, VI)
 	protected Float precio;
 	protected Zona zona;
 	protected int existencias;
 	protected int minimo;
-	
+
 	public static final Pattern patternCodigoBarras = Pattern
-			.compile("^(\\d){5}[ -]?(RO|TE|AL|FR|VI)$");
+			.compile("^(\\d){5}(RO|TE|AL|FR|VI)$");
+	public static final Pattern patternCodigoBarrasAlimentacion = Pattern
+			.compile("^(\\d){5}(AL)$");
+	public static final Pattern patternCodigoBarrasRopa = Pattern
+			.compile("^(\\d){5}(RO)$");
+	public static final Pattern patternCodigoBarrasTecnologia = Pattern
+			.compile("^(\\d){5}(TE)$");
+	public static final Pattern patternCodigoBarrasFruteria = Pattern
+			.compile("^(\\d){5}(FR)$");
+	public static final Pattern patternCodigoBarrasVideojuegos = Pattern
+			.compile("^(\\d){5}(VI)$");
 
 	/**
 	 * @param listaProductos
@@ -22,20 +37,30 @@ public class Producto implements IVA{
 	 * @param zona
 	 * @param existencias
 	 * @param minimo
+	 * @throws ExistenciasInvalidasException
 	 * 
 	 */
 	Producto(ListaProductos nombre, String codigoBarras, float precio,
-			Zona zona, int existencias, int minimo) {
+			Zona zona, int existencias, int minimo)
+			throws ExistenciasInvalidasException {
 		super();
-		this.nombre = nombre;
-		this.codigoBarras = codigoBarras;
+		setNombre(nombre);
+		setCodigoBarras(codigoBarras);
 		setPrecio((float) calcularIVA(precio));
-		this.zona = zona;
-		this.existencias=existencias;
-		this.minimo=minimo;
+		setZona(zona);
+		setMinimo(minimo);
+		setExistencias(existencias);
 	}
-	
-	private ListaProductos getNombre() {
+
+	public Producto(String barras) {
+		this.codigoBarras = barras;
+	}
+
+	public Producto() {
+
+	}
+
+	public ListaProductos getNombre() {
 		return nombre;
 	}
 
@@ -43,11 +68,11 @@ public class Producto implements IVA{
 		this.nombre = nombre;
 	}
 
-	private Float getPrecio() {
+	public Float getPrecio() {
 		return precio;
 	}
-	
-	private void setPrecio(float d) {
+
+	public void setPrecio(float d) {
 		this.precio = d;
 	}
 
@@ -59,53 +84,59 @@ public class Producto implements IVA{
 		this.zona = zona;
 	}
 
-	private String getCodigoBarras() {
+	public String getCodigoBarras() {
 		return codigoBarras;
 	}
 
-
-	
-	
-
-	int getExistencias() {
+	public int getExistencias() {
 		return existencias;
 	}
 
-	/**
-	 * @param existencias
-	 *            the existencias to set
-	 * @throws ExistenciasInvalidasException
-	 *             Cuando el número de existencias es negativo
-	 */
-	private void setExistencias(int existencias)
+	public void setExistencias(int existencias)
 			throws ExistenciasInvalidasException {
-		if (existencias < 0)
+
+		if (existencias <= getMinimo()) {
 			throw new ExistenciasInvalidasException(
-					"Las existencias no pueden ser negativas");
+					"Las existencias no pueden ser menores que la cantidad mínima");
+		}
+
 		this.existencias = existencias;
 	}
 
+	public static boolean esValido(String codigoBarras, Zona zona) {
+		switch (zona) {
+		case ALIMENTACION:
+			return patternCodigoBarrasAlimentacion.matcher(codigoBarras)
+					.matches();
+		case TECNOLOGIA:
+			return patternCodigoBarrasTecnologia.matcher(codigoBarras)
+					.matches();
+		case FRUTERIA:
+			return patternCodigoBarrasFruteria.matcher(codigoBarras).matches();
+		case VIDEOJUEGOS:
+			return patternCodigoBarrasVideojuegos.matcher(codigoBarras)
+					.matches();
+		case ROPA:
+			return patternCodigoBarrasRopa.matcher(codigoBarras).matches();
+		default:
+			return false;
+		}
 
-
-
-
-	public static boolean esValido(String codigoBarras) {
-		return patternCodigoBarras.matcher(codigoBarras).matches();
 	}
-	
-	private void setCodigoBarras(String codigoBarras)
+
+	private void setCodigoBarras(String codigoBarras, Zona zona)
 			throws CodigoBarrasNoValidoException {
-		if (esValido(codigoBarras))
+		if (esValido(codigoBarras, zona))
 			this.codigoBarras = codigoBarras;
 		else
 			throw new CodigoBarrasNoValidoException("");
 
 	}
-	
+
 	/**
 	 * @return the minimo
 	 */
-	int getMinimo() {
+	public int getMinimo() {
 		return minimo;
 	}
 
@@ -130,99 +161,66 @@ public class Producto implements IVA{
 	 * @see java.lang.Object#toString()
 	 */
 
-	@Override
-	public String toString() {
-		return "\nArticulo ["
-				+ (nombre != null ? "nombre=" + nombre + ", " : "")
-				+ "\texistencias=" + getExistencias() + ", \tminimo=" + minimo
-				+ "]";
-	}
-
 	public boolean bajoMinimos() {
 		if (getExistencias() < getMinimo())
 			return true;
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
+	@Override
+	public String toString() {
+		return "Producto [nombre=" + nombre + ", codigoBarras=" + codigoBarras
+				+ ", precio=" + precio + ", zona=" + zona + ", existencias="
+				+ existencias + ", minimo=" + minimo + "]";
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((nombre == null) ? 0 : nombre.hashCode());
+		result = prime * result
+				+ ((codigoBarras == null) ? 0 : codigoBarras.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	/**
-	 * Indica si otro artículo es similar a este. Se fija en el nombre del
-	 * artículo, obviando el resto de atributos
-	 * 
-	 * @param obj
-	 *            artículo con el que se compara
-	 * @return true si el artículo this es similar al objeto obj. false en otro
-	 *         caso
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+
 		Producto other = (Producto) obj;
-		if (nombre == null) {
-			if (other.nombre != null)
+		if (codigoBarras == null) {
+			if (other.codigoBarras != null)
 				return false;
-		} else if (!nombre.equals(other.nombre))
+		} else if (!codigoBarras.equals(other.codigoBarras))
 			return false;
 		return true;
 	}
-	
-	void incrementar(int incremento) throws IncrementoNegativoException {
-		if (incremento < 0)
-			throw new IncrementoNegativoException(
-					"El incremento no puede ser negativo");
-		try {
-			setExistencias(getExistencias() + incremento);
-		} catch (ExistenciasInvalidasException e) {
-			
-			e.printStackTrace();
-		}
-	}
 
-	/**
-	 * Decrementa las existencias del artículo en una cantidad indicada
-	 * 
-	 * @param decremento
-	 *            cantidad a decrementar
-	 * @throws ExistenciasInvalidasException
-	 *             Cuando el número de existencias es negativo
-	 * @throws DecrementoInvalidoException
-	 */
-	void decrementar(int decremento) throws ExistenciasInvalidasException,
-			DecrementoInvalidoException {
-		if (decremento < 0)
-			throw new DecrementoInvalidoException(
-					"El decremento no puede ser negativo");
-		setExistencias(getExistencias() - decremento);
-
-	}
-
-	
-	public double calcularIVA(double precio) {
+	public float calcularIVA(float precio) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	
+	private void setCodigoBarras(String codigoBarras) {
+		this.codigoBarras = codigoBarras;
+	}
+
+	@Override
+	public int compareTo(Producto producto) {
+
+		int res;
+		if (this.precio < producto.precio) {
+			res = -1;
+		}else if (this.precio > producto.precio) {
+			res = 1;
+		}else {
+			res = 0;
+		}
+		return res;
+
+	}
+
 }
