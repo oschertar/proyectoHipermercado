@@ -27,6 +27,7 @@ import javax.swing.UIManager;
 import java.awt.Color;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JList;
 import javax.swing.AbstractListModel;
@@ -109,8 +110,9 @@ public class VerRopa extends JDialog {
 						limpiar();
 					}
 				} catch (ProductoYaExistenteException e3) {
-					// TODO Auto-generated catch block
-					e3.printStackTrace();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Producto ya existente", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -133,8 +135,9 @@ public class VerRopa extends JDialog {
 						limpiar();
 					}
 				} catch (ProductoYaExistenteException e4) {
-					// TODO Auto-generated catch block
-					e4.printStackTrace();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Producto ya existente", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 				
 			}
@@ -158,8 +161,9 @@ public class VerRopa extends JDialog {
 						limpiar();
 					}
 				} catch (ProductoYaExistenteException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Producto ya existente", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 
 			}

@@ -408,8 +408,9 @@ public class VenderProducto extends JDialog {
 				txtDiasRestantes.setText(Integer.toString(diferencia));
 				
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(contentPanel,
+						"Error al intercambiar datos", "Error",
+						JOptionPane.ERROR_MESSAGE);
 			}
 
 			break;
@@ -441,8 +442,9 @@ public class VenderProducto extends JDialog {
 				txtDiasRestantes.setText(Integer.toString(diferencia));
 				
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(contentPanel,
+						"Error al intercambiar datos", "Error",
+						JOptionPane.ERROR_MESSAGE);
 			}
 
 			break;
@@ -530,8 +532,9 @@ public class VenderProducto extends JDialog {
 					Integer.parseInt(spinnerIncremento.getValue().toString()) + " unidades vendidas con éxito.");
 			txtUnidades.setText(Integer.toString(General.hipermercado.get(indice).getExistencias()));
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(contentPanel,
+					"No has introducido números", "Error",
+					JOptionPane.ERROR_MESSAGE);
 		} catch (ExistenciasInvalidasException e) {
 			JOptionPane.showMessageDialog(contentPanel,
 					"Número de existencias inválidas.", "Error",

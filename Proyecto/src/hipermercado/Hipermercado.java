@@ -7,7 +7,7 @@ import java.util.Iterator;
 public class Hipermercado implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private boolean modificado = false;
-	private Producto producto;
+	public Producto producto;
 
 	public ArrayList<Producto> hipermercado = new ArrayList<Producto>();
 

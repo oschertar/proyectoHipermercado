@@ -101,7 +101,8 @@ public class BuscarArticulo extends JDialog {
 			}
 		});
 		setResizable(false);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(BuscarArticulo.class.getResource("/img/codigobarras.jpg")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(
+				BuscarArticulo.class.getResource("/img/codigobarras.jpg")));
 		setTitle("Buscar Producto por C\u00F3digo de Barras");
 		setBounds(100, 100, 666, 382);
 		getContentPane().setLayout(new BorderLayout());
@@ -182,9 +183,14 @@ public class BuscarArticulo extends JDialog {
 					txtUnidades.setText(Integer.toString(General.hipermercado
 							.get(indice).getExistencias()));
 					spinnerIncremento.setValue(0);
-				} catch (NumberFormatException | ExistenciasInvalidasException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(null,
+							"No se han introducido números", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} catch (ExistenciasInvalidasException e) {
+					JOptionPane.showMessageDialog(null,
+							"Existencias inválidas", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -294,8 +300,9 @@ public class BuscarArticulo extends JDialog {
 							.getPrecio()).toString()));
 					btnVender.setVisible(false);
 				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null,
+							"No se han introducido números", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -352,13 +359,13 @@ public class BuscarArticulo extends JDialog {
 				btnMostrar = new JButton("Buscar");
 				btnMostrar.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
-						
-							mostrarProducto();
-								
-							btnIncrementarUnidades.setVisible(true);
-							spinnerIncremento.setEnabled(true);
-							btnVerZona.setVisible(true);
-						
+
+						mostrarProducto();
+
+						btnIncrementarUnidades.setVisible(true);
+						spinnerIncremento.setEnabled(true);
+						btnVerZona.setVisible(true);
+
 					}
 				});
 				buttonPane.add(btnMostrar);
@@ -369,8 +376,7 @@ public class BuscarArticulo extends JDialog {
 	}
 
 	private void mostrarProducto() {
-		
-		
+
 		try {
 			Producto producto = General.hipermercado.get(txtBarras.getText());
 			txtNombre.setText(producto.getNombre().toString());
@@ -380,16 +386,14 @@ public class BuscarArticulo extends JDialog {
 			colocarBotones((Zona) comboBoxZona.getSelectedItem(), producto);
 			txtPrecio.setText(Float.toString(producto.getPrecio()));
 		} catch (CodigoBarrasNoValidoException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,
+					"Código de barras inválido", "Error",
+					JOptionPane.ERROR_MESSAGE);
 		} catch (ProductoNoExistenteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,
+					"El producto no existe", "Error",
+					JOptionPane.ERROR_MESSAGE);
 		}
-		
-		
-
-		
 
 	}
 
@@ -429,8 +433,9 @@ public class BuscarArticulo extends JDialog {
 					btnVender.setVisible(false);
 				}
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(null,
+						"Error al intercambiar datos", "Error",
+						JOptionPane.ERROR_MESSAGE);
 			}
 
 			break;
@@ -448,7 +453,7 @@ public class BuscarArticulo extends JDialog {
 				Calendar actual = Calendar.getInstance();
 				fechaCaducidad.setTime(formato.parse(txtFecha.getText()));
 				actual.setTime(formato.parse(txtFechaActual.getText()));
-				
+
 				if (fechaCaducidad.get(Calendar.YEAR) > actual
 						.get(Calendar.YEAR)) {
 
@@ -466,8 +471,9 @@ public class BuscarArticulo extends JDialog {
 					btnVender.setVisible(false);
 				}
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(null,
+						"Error al intercambiar datos", "Error",
+						JOptionPane.ERROR_MESSAGE);
 			}
 
 			break;
@@ -475,10 +481,14 @@ public class BuscarArticulo extends JDialog {
 			colocarComboBox(false, false, false, false, false, false, false,
 					false, true, true, true, true, false);
 			txtMarca.setText(((Ropa) producto).getMarca().toString());
-			if(producto.getNombre().toString()== ListaProductos.ZAPATILLAS.toString()){
-				txtTalla.setText(Integer.toString(((Zapatillas) producto).getTalla()));
-			}
-			else if(producto.getNombre().toString()== ListaProductos.CAMISETA.toString() | producto.getNombre().toString()== ListaProductos.PANTALÓN.toString()){
+			if (producto.getNombre().toString() == ListaProductos.ZAPATILLAS
+					.toString()) {
+				txtTalla.setText(Integer.toString(((Zapatillas) producto)
+						.getTalla()));
+			} else if (producto.getNombre().toString() == ListaProductos.CAMISETA
+					.toString()
+					| producto.getNombre().toString() == ListaProductos.PANTALÓN
+							.toString()) {
 				txtTalla.setText(((Camiseta) producto).getTalla().toString());
 			}
 
@@ -510,14 +520,12 @@ public class BuscarArticulo extends JDialog {
 		btnVender.setVisible(bVender);
 	}
 
-	
-
 	private void clear() {
 		txtBarras.setText("");
 		txtNombre.setText("");
 		txtUnidades.setText("");
 		spinnerIncremento.setValue(0);
-		
+
 		btnMostrar.setVisible(true);
 		btnIncrementarUnidades.setVisible(false);
 		spinnerIncremento.setEnabled(false);

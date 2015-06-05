@@ -6,10 +6,6 @@ import hipermercado.Producto;
 
 import java.awt.EventQueue;
 
-
-
-
-
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -33,51 +29,36 @@ import javax.swing.ImageIcon;
 
 import java.awt.Color;
 
-
-
-
-
 import javax.swing.KeyStroke;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.awt.Toolkit;
 
-
-
 import java.awt.FlowLayout;
 import java.awt.BorderLayout;
 
 import javax.swing.JButton;
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class PrincipalGUI {
 
 	public static JFrame frmHipermercadoGuadalquivir;
-	
 
-	private Ayuda ayuda = new Ayuda();
-	// private AcercaDe acercade = new AcercaDe();
+	public static Ayuda ayuda = new Ayuda();
+	private AcercaDe acercade = new AcercaDe();
 	private JFrame nuevo = new JFrame();
 
 	private JFileChooser filechooser = new JFileChooser();
-	
+
 	private FileNameExtensionFilter filtro = new FileNameExtensionFilter(
-			"Archivos .obj", "obj");
+			"Archivos .gua", "gua");
 
 	protected File file;
 	private File rutaFichero;
-	private ComprarProductos comprarproductos = new ComprarProductos();
-	//private MostrarHipermercado mostrar = new MostrarHipermercado();
+
 	public static Hipermercado hipermercado = new Hipermercado();
-	private VerRopa verropa = new VerRopa();
-	protected VerAlimentacion veralimentacion = new VerAlimentacion();
-	protected VerVideojuegos vervideojuegos = new VerVideojuegos();
-	protected VerTecnologia vertecnologia= new VerTecnologia();
-	protected VerFruteria verfruteria = new VerFruteria();
-	protected BuscarArticulo buscararticulo = new BuscarArticulo();
-	protected VenderProducto venderproducto = new VenderProducto();
-	//protected HipermercadoOrdenado hipermercadoordenado = new HipermercadoOrdenado();
 
 	/**
 	 * Launch the application.
@@ -88,9 +69,10 @@ public class PrincipalGUI {
 				try {
 					PrincipalGUI window = new PrincipalGUI();
 					window.frmHipermercadoGuadalquivir.setVisible(true);
-					
+
 				} catch (Exception e) {
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Error", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -108,6 +90,16 @@ public class PrincipalGUI {
 	 */
 	private void initialize() {
 		frmHipermercadoGuadalquivir = new JFrame();
+
+		frmHipermercadoGuadalquivir.addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				frmHipermercadoGuadalquivir
+						.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+				salir();
+			}
+		});
 		frmHipermercadoGuadalquivir.setResizable(false);
 
 		frmHipermercadoGuadalquivir.setIconImage(Toolkit.getDefaultToolkit()
@@ -183,6 +175,7 @@ public class PrincipalGUI {
 		JMenuItem mntmAadirProducto = new JMenuItem("Comprar productos");
 		mntmAadirProducto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				ComprarProductos comprarproductos = new ComprarProductos();
 				comprarproductos.setVisible(true);
 			}
 		});
@@ -195,7 +188,14 @@ public class PrincipalGUI {
 		JMenuItem mntmVenderProductos = new JMenuItem("Vender productos");
 		mntmVenderProductos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				venderproducto.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					VenderProducto venderproducto = new VenderProducto();
+					venderproducto.setVisible(true);
+				}
 			}
 		});
 		mntmVenderProductos.setAccelerator(KeyStroke.getKeyStroke(
@@ -211,8 +211,14 @@ public class PrincipalGUI {
 				"Mostrar Hipermercado");
 		mntmMostrarHipermercado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				MostrarHipermercado mostrar = new MostrarHipermercado();
-				mostrar.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					MostrarHipermercado mostrar = new MostrarHipermercado();
+					mostrar.setVisible(true);
+				}
 			}
 		});
 		mntmMostrarHipermercado.setAccelerator(KeyStroke.getKeyStroke(
@@ -230,7 +236,14 @@ public class PrincipalGUI {
 		JMenuItem mntmDeportes = new JMenuItem("Ropa");
 		mntmDeportes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				verropa.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					VerRopa verropa = new VerRopa();
+					verropa.setVisible(true);
+				}
 			}
 		});
 		mntmDeportes.setIcon(new ImageIcon(PrincipalGUI.class
@@ -240,7 +253,14 @@ public class PrincipalGUI {
 		JMenuItem mntmTecnologa = new JMenuItem("Tecnolog\u00EDa");
 		mntmTecnologa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				vertecnologia.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					VerTecnologia vertecnologia = new VerTecnologia();
+					vertecnologia.setVisible(true);
+				}
 			}
 		});
 		mntmTecnologa.setIcon(new ImageIcon(PrincipalGUI.class
@@ -250,7 +270,14 @@ public class PrincipalGUI {
 		JMenuItem mntmAlimentacin = new JMenuItem("Alimentaci\u00F3n");
 		mntmAlimentacin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				veralimentacion .setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					VerAlimentacion veralimentacion = new VerAlimentacion();
+					veralimentacion.setVisible(true);
+				}
 			}
 		});
 		mntmAlimentacin.setIcon(new ImageIcon(PrincipalGUI.class
@@ -260,7 +287,14 @@ public class PrincipalGUI {
 		JMenuItem mntmFrutera = new JMenuItem("Fruter\u00EDa");
 		mntmFrutera.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				verfruteria.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					VerFruteria verfruteria = new VerFruteria();
+					verfruteria.setVisible(true);
+				}
 			}
 		});
 		mntmFrutera.setIcon(new ImageIcon(PrincipalGUI.class
@@ -270,7 +304,14 @@ public class PrincipalGUI {
 		JMenuItem mntmVideojuegos = new JMenuItem("Videojuegos");
 		mntmVideojuegos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				vervideojuegos.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					VerVideojuegos vervideojuegos = new VerVideojuegos();
+					vervideojuegos.setVisible(true);
+				}
 			}
 		});
 		mntmVideojuegos.setIcon(new ImageIcon(PrincipalGUI.class
@@ -280,7 +321,14 @@ public class PrincipalGUI {
 		JMenuItem mntmPorCdigoDe = new JMenuItem("Por c\u00F3digo de barras");
 		mntmPorCdigoDe.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				buscararticulo.setVisible(true);
+				if (General.hipermercado.size() == 0) {
+					JOptionPane.showMessageDialog(frmHipermercadoGuadalquivir,
+							"Hipermercado vacio", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} else {
+					BuscarArticulo buscararticulo = new BuscarArticulo();
+					buscararticulo.setVisible(true);
+				}
 			}
 		});
 		mntmPorCdigoDe.setIcon(new ImageIcon(PrincipalGUI.class
@@ -296,8 +344,17 @@ public class PrincipalGUI {
 		mntmVerLaAyuda.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				ayuda.setVisible(true);
+
 			}
 		});
+
+		JMenuItem mntmAcercaDe = new JMenuItem("Acerca De");
+		mntmAcercaDe.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				acercade.setVisible(true);
+			}
+		});
+		mnAyuda.add(mntmAcercaDe);
 		mnAyuda.add(mntmVerLaAyuda);
 		frmHipermercadoGuadalquivir.getContentPane().setLayout(
 				new BorderLayout(0, 0));
@@ -393,7 +450,6 @@ public class PrincipalGUI {
 			rutaFichero = archivo;
 			frmHipermercadoGuadalquivir.setTitle(rutaFichero.getName()
 					+ " - Hipermercado Guadalquivir");
-			System.out.println(hipermercado.toString());
 
 			return true;
 		} catch (IOException e1) {
@@ -469,32 +525,47 @@ public class PrincipalGUI {
 		try {
 
 			General.hipermercado = (Hipermercado) Fichero.abrir(hipermercado);
-			
-			//frmHipermercadoGuadalquivir.setTitle(file.getName());
+
 		} catch (FileNotFoundException e) {
-			System.out.println("El archivo no se ha encontrado.");
+			JOptionPane.showMessageDialog(null,
+					"El archivo no se ha encontrado", "Error",
+					JOptionPane.ERROR_MESSAGE);
 		} catch (ClassNotFoundException e) {
-			System.out.println("La información no coincide");
+			JOptionPane.showMessageDialog(null, "La información no coincide",
+					"Error", JOptionPane.ERROR_MESSAGE);
 		} catch (IOException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,
+					"Error de Entrada/Salida de datos", "Error",
+					JOptionPane.ERROR_MESSAGE);
 
 		} catch (NullPointerException e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Fichero vacío", "Error",
+					JOptionPane.ERROR_MESSAGE);
 		}
 		General.hipermercado.setModificado(false);
 
 	}
 
 	private void salir() {
-		int opcion = JOptionPane.showConfirmDialog(frmHipermercadoGuadalquivir,
-				"¿Quieres guardar antes de salir");
-		if (opcion == JOptionPane.CANCEL_OPTION) {
-			return;
 
-		} else if (opcion == JOptionPane.YES_OPTION) {
-			guardar();
-		} else
+		if (General.hipermercado.isModificado()) {
+
+			int opcion = JOptionPane.showConfirmDialog(
+					frmHipermercadoGuadalquivir,
+					"¿Quieres guardar antes de salir");
+			if (opcion == JOptionPane.CANCEL_OPTION) {
+				return;
+
+			} else if (opcion == JOptionPane.YES_OPTION) {
+				guardar();
+			} else if (opcion == 1) {
+				System.exit(0);
+
+			} else {
+				return;
+			}
+		} else {
 			System.exit(0);
-			frmHipermercadoGuadalquivir.dispose();
+		}
 	}
 }

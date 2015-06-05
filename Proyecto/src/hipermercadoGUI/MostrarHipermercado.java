@@ -5,8 +5,7 @@ import hipermercado.Camiseta;
 import hipermercado.ExistenciasInvalidasException;
 import hipermercado.Fruteria;
 import hipermercado.ListaProductos;
-import hipermercado.Origen;
-import hipermercado.PrecioInvalidoException;
+
 import hipermercado.Producto;
 import hipermercado.Ropa;
 import hipermercado.Tecnologia;
@@ -26,21 +25,21 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
+
 import javax.swing.JComboBox;
 
 import java.awt.Toolkit;
-import java.awt.SystemColor;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.Collections;
+
 import java.util.GregorianCalendar;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -51,17 +50,19 @@ public class MostrarHipermercado extends JDialog {
 	/**
 	 * 
 	 */
+	
 	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtBarras;
-	private final ButtonGroup buttonGroup = new ButtonGroup();
+	
 	private int indice = 0;
 	private JComboBox<Zona> comboBoxZona;
 	private JButton botonAnterior;
 	private JButton botonSiguiente;
 
-	private JButton btnMostrar;
-	private Zona zona;
 	private Zonas zonas = new Zonas();
 	private JTextField txtNombre;
 	private JTextField txtUnidades;
@@ -184,9 +185,14 @@ public class MostrarHipermercado extends JDialog {
 					txtUnidades.setText(Integer.toString(General.hipermercado
 							.get(indice).getExistencias()));
 					spinnerIncremento.setValue(0);
-				} catch (NumberFormatException | ExistenciasInvalidasException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(null,
+							"No se han introducido números", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} catch (ExistenciasInvalidasException e) {
+					JOptionPane.showMessageDialog(null,
+							"Existencias inválidas", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -296,8 +302,8 @@ public class MostrarHipermercado extends JDialog {
 							.getPrecio()).toString()));
 					btnVender.setVisible(false);
 				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "No se han introducido números",
+							"Error", JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -343,7 +349,8 @@ public class MostrarHipermercado extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
 			botonAnterior = new JButton("<");
-			botonAnterior.setVisible(false);
+			botonAnterior.setVisible(true);
+			botonAnterior.setEnabled(false);
 			botonAnterior.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					mostrarAnterior();
@@ -353,7 +360,8 @@ public class MostrarHipermercado extends JDialog {
 			buttonPane.add(botonAnterior);
 
 			botonSiguiente = new JButton(">");
-			botonSiguiente.setVisible(false);
+			botonSiguiente.setVisible(true);
+			botonSiguiente.setEnabled(false);
 			botonSiguiente.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					mostrarSiguiente();
@@ -369,40 +377,25 @@ public class MostrarHipermercado extends JDialog {
 						clear();
 					}
 				});
-
-				btnMostrar = new JButton("Mostrar");
-				btnMostrar.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						if (General.hipermercado.size() == 0)
-							JOptionPane.showMessageDialog(contentPanel,
-									"Hipermercado vacio", "Error",
-									JOptionPane.ERROR_MESSAGE);
-						if (General.hipermercado.get(0) != null) {
-							mostrarProducto(General.hipermercado.get(indice));
-							comprobarTamaño();
-							botonSiguiente.setVisible(true);
-							botonAnterior.setVisible(true);
-							btnMostrar.setVisible(false);
-							btnIncrementarUnidades.setVisible(true);
-							spinnerIncremento.setEnabled(true);
-							btnVerZona.setVisible(true);
-						}
-					}
-				});
-				buttonPane.add(btnMostrar);
 				buttonPane.add(cancelButton);
 			}
 		}
+		Collections.sort(General.hipermercado.hipermercado);
 		empieza();
 	}
 
 	private void empieza() {
+		
+		
 		if (General.hipermercado.size() == 0) {
 			return;
 		}
 		indice = 0;
 		mostrarProducto(General.hipermercado.get(indice));
 		comprobarTamaño();
+		btnIncrementarUnidades.setVisible(true);
+		spinnerIncremento.setEnabled(true);
+		btnVerZona.setVisible(true);
 	}
 	private void mostrarSiguiente() {
 		mostrarProducto(General.hipermercado.get(++indice));
@@ -463,8 +456,8 @@ public class MostrarHipermercado extends JDialog {
 					btnVender.setVisible(false);
 				}
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Error al intercambiar datos",
+						"Error", JOptionPane.ERROR_MESSAGE);
 			}
 
 			break;
@@ -500,8 +493,8 @@ public class MostrarHipermercado extends JDialog {
 					btnVender.setVisible(false);
 				}
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Error al intercambiar datos",
+						"Error", JOptionPane.ERROR_MESSAGE);
 			}
 
 			break;
@@ -563,7 +556,6 @@ public class MostrarHipermercado extends JDialog {
 		spinnerIncremento.setValue(0);
 		botonSiguiente.setVisible(false);
 		botonAnterior.setVisible(false);
-		btnMostrar.setVisible(true);
 		btnIncrementarUnidades.setVisible(false);
 		spinnerIncremento.setEnabled(false);
 		btnVerZona.setVisible(false);

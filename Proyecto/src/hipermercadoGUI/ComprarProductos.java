@@ -95,6 +95,10 @@ import java.awt.event.MouseEvent;
 
 public class ComprarProductos extends JDialog {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6246639619887511159L;
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtBarras;
 	private JComboBox<Producto> comboBoxProducto;
@@ -147,7 +151,7 @@ public class ComprarProductos extends JDialog {
 	private JLabel lblFabricante;
 	private JLabel lblOrigen;
 	private JComboBox<Origen> comboBoxOrigen;
-	
+
 	private JComboBox<Talla> comboBoxTallaEnum;
 
 	/**
@@ -221,23 +225,24 @@ public class ComprarProductos extends JDialog {
 									(ListaProductos) comboBoxProducto
 											.getSelectedItem(), txtBarras
 											.getText());
-							
 
 						} catch (NumberFormatException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (HeadlessException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							JOptionPane.showMessageDialog(contentPanel,
+									"Formato Inválido", "Error",
+									JOptionPane.ERROR_MESSAGE);
+						
 						} catch (ProductoYaExistenteException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							JOptionPane.showMessageDialog(contentPanel,
+									"Producto ya existente", "Error",
+									JOptionPane.ERROR_MESSAGE);
 						} catch (NullPointerException e) {
 							JOptionPane.showMessageDialog(contentPanel,
 									"Hay casillas sin rellenar", "Error",
 									JOptionPane.ERROR_MESSAGE);
 						} catch (ExistenciasInvalidasException e) {
-							// TODO Auto-generated catch block
+							JOptionPane.showMessageDialog(contentPanel,
+									"Existencias inválidas", "Error",
+									JOptionPane.ERROR_MESSAGE);
 							e.printStackTrace();
 						} catch (CodigoBarrasNoValidoException e) {
 							JOptionPane
@@ -246,8 +251,9 @@ public class ComprarProductos extends JDialog {
 											"Código de barras inválido. Formato inadecuado",
 											"Error", JOptionPane.ERROR_MESSAGE);
 						} catch (ParseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							JOptionPane.showMessageDialog(null,
+									"Error al intercambiar datos", "Error",
+									JOptionPane.ERROR_MESSAGE);
 						}
 
 					}
@@ -327,9 +333,8 @@ public class ComprarProductos extends JDialog {
 					comboBoxMarca.setVisible(true);
 					lblTalla.setVisible(true);
 					cambiarImagen(true);
-					
 
-				}else if (comboBoxZona.getSelectedItem() != Zona.ROPA) {
+				} else if (comboBoxZona.getSelectedItem() != Zona.ROPA) {
 					comboBoxTallas.setVisible(false);
 					comboBoxTallaEnum.setVisible(false);
 					lblTalla.setVisible(false);
@@ -462,43 +467,6 @@ public class ComprarProductos extends JDialog {
 
 		txtExistencias = new JTextField();
 		txtExistencias.setEditable(false);
-		txtExistencias.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent arg0) {
-				char c = arg0.getKeyChar();
-
-				if (Character.isLetter(c)) {
-					getToolkit().beep();
-					arg0.consume();
-					JOptionPane.showMessageDialog(contentPanel,
-							"Solo se admiten números.", "Error",
-							JOptionPane.ERROR_MESSAGE);
-
-				}
-			}
-		});
-		txtExistencias.getDocument().addDocumentListener(
-				new DocumentListener() {
-
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-
-						actualizarNumero(txtExistencias, sliderExistencias);
-
-					}
-
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-
-						actualizarNumero(txtExistencias, sliderExistencias);
-					}
-
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-
-						actualizarNumero(txtExistencias, sliderExistencias);
-					}
-				});
 
 		txtExistencias.setBounds(244, 180, 86, 20);
 		contentPanel.add(txtExistencias);
@@ -527,38 +495,6 @@ public class ComprarProductos extends JDialog {
 
 		txtMinimos = new JTextField();
 		txtMinimos.setEditable(false);
-		txtMinimos.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				char c = e.getKeyChar();
-
-				if (Character.isLetter(c)) {
-					getToolkit().beep();
-					e.consume();
-					JOptionPane.showMessageDialog(contentPanel,
-							"Solo se admiten números.", "Error",
-							JOptionPane.ERROR_MESSAGE);
-
-				}
-			}
-		});
-		txtMinimos.getDocument().addDocumentListener(new DocumentListener() {
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				actualizarNumero(txtMinimos, sliderMinimos);
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				actualizarNumero(txtMinimos, sliderMinimos);
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				actualizarNumero(txtMinimos, sliderMinimos);
-			}
-		});
 
 		txtMinimos.setBounds(244, 263, 86, 20);
 		contentPanel.add(txtMinimos);
@@ -804,10 +740,11 @@ public class ComprarProductos extends JDialog {
 		switch ((Zona) comboBoxZona.getSelectedItem()) {
 		case ROPA:
 			actualizarImagenes(false, true, false, false, false);
-			if((ListaProductos) comboBoxProducto.getSelectedItem()==ListaProductos.ZAPATILLAS){
+			if ((ListaProductos) comboBoxProducto.getSelectedItem() == ListaProductos.ZAPATILLAS) {
 				comboBoxTallas.setVisible(true);
 				comboBoxTallaEnum.setVisible(false);
-			}else if((ListaProductos) comboBoxProducto.getSelectedItem()==ListaProductos.CAMISETA |(ListaProductos) comboBoxProducto.getSelectedItem()==ListaProductos.PANTALÓN){
+			} else if ((ListaProductos) comboBoxProducto.getSelectedItem() == ListaProductos.CAMISETA
+					| (ListaProductos) comboBoxProducto.getSelectedItem() == ListaProductos.PANTALÓN) {
 				comboBoxTallas.setVisible(false);
 				comboBoxTallaEnum.setVisible(true);
 			}

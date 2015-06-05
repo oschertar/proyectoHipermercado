@@ -20,6 +20,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -117,8 +118,9 @@ public class VerTecnologia extends JDialog {
 						limpiar();
 					}
 				} catch (ProductoYaExistenteException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Producto ya existente", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -142,8 +144,9 @@ public class VerTecnologia extends JDialog {
 						limpiar();
 					}
 				} catch (ProductoYaExistenteException e4) {
-					// TODO Auto-generated catch block
-					e4.printStackTrace();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Producto ya existente", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -166,8 +169,9 @@ public class VerTecnologia extends JDialog {
 						limpiar();
 					}
 				} catch (ProductoYaExistenteException e3) {
-					// TODO Auto-generated catch block
-					e3.printStackTrace();
+					JOptionPane.showMessageDialog(contentPanel,
+							"Producto ya existente", "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
